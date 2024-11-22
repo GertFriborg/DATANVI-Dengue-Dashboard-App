@@ -1,0 +1,33 @@
+to fix:
+ALL GRAPHS
+- remove titles
+
+CARDS AT TOP
+- decmials in cards that show average statistics
+- maybe swap colors
+
+Multi line chart
+- 
+
+DONUT CHART
+- pie colors change depending on mode chosesn (luzon orange in cases mode, but yellow in death mode)
+- find way to make prettier
+
+CHROPLETH MAP
+- CREATE A MAPBOX STYLE SO THAT GRAPH BACKGROUND BLENDS INTO APP BACKGGFORUN
+- Change color depending on cases or deaths mode?
+- change the hospital locations to something not blue
+
+BUTTONS
+- fix logic, need to press twice
+
+stacked bar chart
+- make drop list options more appealing
+
+specidic regions:
+- 
+
+LAYOUT
+- maybe not have it auto set to 100% zoom if possible
+- adjust so that when screen window is smaller the components dont get messed up
+
