@@ -20,6 +20,7 @@ CHROPLETH MAP
 
 BUTTONS
 - fix logic, need to press twice
+- button placement
 
 stacked bar chart
 - make drop list options more appealing
@@ -30,4 +31,5 @@ specidic regions:
 LAYOUT
 - maybe not have it auto set to 100% zoom if possible
 - adjust so that when screen window is smaller the components dont get messed up
+- CHANGE FONT
 
