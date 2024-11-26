@@ -20,28 +20,28 @@ total_per_year_graph = px.line(
     x='Date',
     y=['Dengue_Cases', 'Dengue_Deaths'],
     labels={'value': 'Count', 'Date': 'Year'},
-    title='Dengue Cases and Deaths Over Time',
-    color_discrete_map={'Dengue_Cases': '#28AFB0', 'Dengue_Deaths': '#F4D35E'}  # Updated colors
+    #title='Dengue Cases and Deaths Over Time',
+    color_discrete_map={'Dengue_Cases': '#C7E5FF', 'Dengue_Deaths': '#EC7777'}  # Updated colors
 )
 total_per_year_graph.update_layout(
-    paper_bgcolor='#1D2419',  # outside bg BLACK
-    plot_bgcolor='#1D2419',  # inside bg BLACK
+    paper_bgcolor='#393D3F',  # outside bg BLACK
+    plot_bgcolor='#393D3F',  # inside bg BLACK
     font=dict(color='#FFFFFF'),  # font WHITE
-    title=dict(font=dict(size=20, color='#FFFFFF')),  # Title 
+    #title=dict(font=dict(size=20, color='#FFFFFF')),  # Title 
 
     xaxis=dict( #x-axis properites
         tickformat="%Y",
         range=["2016-01-01", "2020-12-31"],
         dtick="M12",
         linecolor='#FFFFFF',  # Axis line color WHITE
-        gridcolor='#19647E',  # Gridline color YELLOW
+        gridcolor='#60B3F7',  # Gridline color YELLOW
         zeroline=False,
         title=dict(text='Year', font=dict(color='#FFFFFF'))  # X-axis title font WHITE
     ),
     yaxis=dict(
         title=dict(text='Count', font=dict(color='#FFFFFF')),  # Y-axis title font WHITE
         linecolor='#FFFFFF',  # Axis line color font WHITE
-        gridcolor='#19647E',  # Gridline color YELLOW
+        gridcolor='#60B3F7',  # Gridline color YELLOW
         zeroline=False,
     ),
     legend=dict(
@@ -61,7 +61,7 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 # App Layout
 app.layout = html.Div(
     style={
-        'backgroundColor': '#1D2419',  # layout bg BLACK
+        'backgroundColor': '#393D3F',  # layout bg BLACK
         'color': '#FFFFFF',           # font WHITE
         'padding': '20px',
     },
@@ -89,7 +89,7 @@ app.layout = html.Div(
                             html.H2(f"{df['Dengue_Cases'].sum():,}", 
                                     className="card-text", style={'color': '#FFFFFF'}),
                         ]),
-                        color="#19647E",  # COLOR BLACK
+                        color="#60B3F7",  # COLOR BLACK
                         inverse=True,
                         className="text-center shadow-sm",
                     ),
@@ -105,7 +105,7 @@ app.layout = html.Div(
                             html.H2(f"{df['Dengue_Deaths'].sum():,}", 
                                     className="card-text", style={'color': '#FFFFFF'}),
                         ]),
-                        color="#EE964B",  # ORANGE
+                        color="#EC7777",  # ORANGE
                         inverse=True,
                         className="text-center shadow-sm",
                     ),
@@ -118,10 +118,10 @@ app.layout = html.Div(
                                 html.I(className="fas fa-chart-line me-2"),
                                 "Average Cases per Year:"
                             ], className="card-title", style={'color': '#FFFFFF'}),
-                            html.H2(f"{(df['Dengue_Cases'].sum() / 5):,.2f}", 
+                            html.H2(f"{(df['Dengue_Cases'].sum() / 5):,.0f}", 
                                     className="card-text", style={'color': '#FFFFFF'}),
                         ]),
-                        color="#28AFB0",  # BLUE
+                        color="#60B3F7",  # BLUE
                         inverse=True,
                         className="text-center shadow-sm",
                     ),
@@ -134,10 +134,10 @@ app.layout = html.Div(
                                 html.I(className="fas fa-heartbeat me-2"),
                                 "Average Deaths per Year:"
                             ], className="card-title", style={'color': '#FFFFFF'}),
-                            html.H2(f"{(df['Dengue_Deaths'].sum() / 5):,.2f}", 
+                            html.H2(f"{(df['Dengue_Deaths'].sum() / 5):,.0f}", 
                                     className="card-text", style={'color': '#FFFFFF'}),
                         ]),
-                        color="#F4D35E",  # YELLWO
+                        color="#EC7777",  # YELLWO
                         inverse=True,
                         className="text-center shadow-sm",
                     ),
@@ -151,7 +151,7 @@ app.layout = html.Div(
                     dbc.Card([
                         dbc.CardHeader(html.H4("Total Dengue Cases and Deaths Over Time", style={'color': '#FFFFFF'})),
                         dbc.CardBody(dcc.Graph(figure=total_per_year_graph, id='total-cases-deaths-graph'))
-                    ], style={'backgroundColor': '#19647E'}),
+                    ], style={'backgroundColor': '#60B3F7'}),
                     width=12
                 )
             ], className="mt-4"),
@@ -165,14 +165,14 @@ app.layout = html.Div(
                             dcc.Graph(id='pie-graph'),
                             dcc.Store(id='metric-store', data='Cases')
                         ])
-                    ], style={'backgroundColor': '#19647E'}),
+                    ], style={'backgroundColor': '#60B3F7'}),
                     width=6
                 ),
                 dbc.Col(
                     dbc.Card([
                         dbc.CardHeader(html.H4("Dengue Cases/Deaths by Region", style={'color': '#FFFFFF'})),
                         dbc.CardBody(dcc.Graph(id='choropleth-with-hospitals'))
-                    ], style={'backgroundColor': '#19647E'}),
+                    ], style={'backgroundColor': '#60B3F7'}),
                     width=6
                 )
             ], className="mt-4"),
@@ -182,9 +182,9 @@ app.layout = html.Div(
                 dbc.Col(
                     dbc.ButtonGroup([
                         dbc.Button("Cases", color="warning", id='cases_button', n_clicks=0,
-                                   style={'backgroundColor': '#28AFB0', 'borderColor': '#FFFFFF', 'color': '#FFFFFF'}),
+                                   style={'backgroundColor': '#60B3F7', 'borderColor': '#FFFFFF', 'color': '#FFFFFF'}),
                         dbc.Button("Deaths", color="danger", id='deaths_button', n_clicks=0,
-                                   style={'backgroundColor': '#EE964B', 'borderColor': '#FFFFFF', 'color': '#FFFFFF'}),
+                                   style={'backgroundColor': '#EC7777', 'borderColor': '#FFFFFF', 'color': '#FFFFFF'}),
                     ], size='lg'),
                     width=12,
                     className="d-flex justify-content-center mt-2"
@@ -200,12 +200,21 @@ app.layout = html.Div(
                             dcc.Checklist(
                                 options=[{'label': region, 'value': region} for region in df["Region"].unique()],
                                 id='stacked_region',
-                                inline=True,
-                                style={'backgroundColor': '#1D2419', 'color': '#FFFFFF'},  # White background with dark text
-                                inputStyle={"margin-right": "10px"},  # space between boxes
-                                #labelStyle={'color: '}
+                                inline=True,  # Keeps the checkboxes inline (horizontal)
+                                style={
+                                    'backgroundColor': '#393D3F',  # Dark 
+                                    'color': '#FFFFFF',  # White
+                                    'display': 'flex',  
+                                    'flexWrap': 'wrap', 
+                                    'padding': '10px',  
+                                  
+                                },
+                                inputStyle={"margin-right": "10px", "margin-bottom": "10px"},  # Space checkboxes
+                                labelStyle={'margin-right': '10px', 'margin-bottom': '10px'}  # Space labels
                             ),
-                            dcc.Graph(id='region-graph'),
+                            dcc.Graph(
+                                    id='region-graph'
+                                ),
                             dcc.RangeSlider(
                                 min=2016,
                                 max=2020,
@@ -216,7 +225,7 @@ app.layout = html.Div(
                                 id='stacked_slider'
                             )
                         ])
-                    ], style={'backgroundColor': '#19647E'}),
+                    ], style={'backgroundColor': '#60B3F7'}),
                     width=12
                 ),
                 className="mt-4"
@@ -233,7 +242,7 @@ app.layout = html.Div(
                                 multi=False,
                                 placeholder="Choose which region to display",
                                 id='specific_dropdown',
-                                style={'backgroundColor': '#FFFFFF', 'color': '#1D2419'}
+                                style={'backgroundColor': '#FFFFFF', 'color': '#393D3F'}
                             ),
                             dcc.Graph(id='specific-region-graph'),
                             dcc.RangeSlider(
@@ -246,7 +255,7 @@ app.layout = html.Div(
                                 id='specific_slider'
                             )
                         ])
-                    ], style={'backgroundColor': '#19647E'}),
+                    ], style={'backgroundColor': '#60B3F7'}),
                     width=12
                 ),
                 className="mt-4 mb-4"
@@ -259,6 +268,8 @@ app.layout = html.Div(
 
 # --------------------------Callbacks-------------------------------------------------------------------------------------------------------------------------
 
+
+
 # FOR PIE AND CHOROPLETH ROW
     #BuTTONS
 @app.callback(
@@ -267,17 +278,21 @@ app.layout = html.Div(
      Input('deaths_button', 'n_clicks')],
     [State('metric-store', 'data')]
 )
-def update_metric(cases_n_clicks, deaths_n_clicks, current_metric):
-    
-    cases_n_clicks = cases_n_clicks or 0
-    deaths_n_clicks = deaths_n_clicks or 0  #bad logic fix later
 
-    if cases_n_clicks > deaths_n_clicks:
+def update_metric(cases_n_clicks, deaths_n_clicks, current_metric):
+    # Default clicks to 0 if None
+    cases_n_clicks = cases_n_clicks or 0
+    deaths_n_clicks = deaths_n_clicks or 0
+
+    # Determine which button was clicked most recently
+    if cases_n_clicks > deaths_n_clicks and current_metric != 'Cases':
         return 'Cases'
-    elif deaths_n_clicks > cases_n_clicks:
+    if deaths_n_clicks > cases_n_clicks and current_metric != 'Deaths':
         return 'Deaths'
-    else:
-        return current_metric
+
+    # If the same button is clicked again, keep the current metric
+    return current_metric
+
 
 
     # Update pie chart based on button
@@ -288,7 +303,14 @@ def update_metric(cases_n_clicks, deaths_n_clicks, current_metric):
 def update_pie_chart(metric):
     values = 'Dengue_Cases' if metric == 'Cases' else 'Dengue_Deaths'
     title = f'Dengue {metric} per Island'
-    colors = ['#28AFB0', '#F4D35E', '#EE964B', '#19647E']  # Custom color theme
+    
+
+    island_colors = {
+        "Luzon": '#FFD700',
+        "Visayas": "#60B3F7",
+        "Mindanao" : "#EC7777"
+    }
+    
 
     fig = px.pie(
         df,
@@ -296,12 +318,13 @@ def update_pie_chart(metric):
         values=values,
         hole=0.4,
         title=title,
-        color_discrete_sequence=colors
+        color='Island',
+        color_discrete_map=island_colors
     )
     fig.update_traces(textinfo='percent+label')
 
     fig.update_layout(
-        paper_bgcolor='#1D2419',
+        paper_bgcolor='#393D3F',
         font=dict(color='#FFFFFF'),
         title=dict(font=dict(size=20, color='#FFFFFF')),
         width=600,
@@ -317,39 +340,46 @@ def update_pie_chart(metric):
 def update_choropleth(metric):
     metric_column = 'Dengue_Cas' if metric == 'Cases' else 'Dengue_Dea'
     
-   
-    color_scale = [
-        [0.0, '#FFFFFF'],  [1.0, '#EE964B']   # WHITE TO ORANGE
-    ]
-
+    # Define color scale based on the selected metric
+    if metric == 'Cases':
+        color_scale = [
+            [0.0, '#FFFFFF'],  # White for the minimum
+            [1.0, '#60B3F7']   # Blue for the maximum (Cases)
+        ]
+    elif metric == 'Deaths':
+        color_scale = [
+            [0.0, '#FFFFFF'],  # White for the minimum
+            [1.0, '#DC143C']   # Red for the maximum (Deaths)
+        ]
+    
+    # Create choropleth map
     fig = px.choropleth_mapbox(
         total_cases_and_deaths_with_region,
         geojson=total_cases_and_deaths_with_region.__geo_interface__,
         locations=total_cases_and_deaths_with_region.index,
         color=metric_column,
         hover_name='Region',
-        mapbox_style="carto-darkmatter",  # MAKE OWN MAPBOX STYLE LATER USE DARKMATTER FOR NOW
+        mapbox_style="carto-darkmatter",  # Use dark background style
         zoom=4,
         center={"lat": 12.8797, "lon": 121.7740},
         opacity=0.7,
-        color_continuous_scale=color_scale,  # Use the custom color scale
+        color_continuous_scale=color_scale,  
         title=f"Dengue {metric} by Region",
     )
 
-    #for the hospital and lcinic points
+    # Add hospital points with the ye llowcolor
     fig.add_scattermapbox(
         lat=hospitals_and_clinics['lat'],
         lon=hospitals_and_clinics['lon'],
         mode='markers',
-        marker=dict(size=5, color='#19647E', opacity=0.7),
+        marker=dict(size=5, color='#FFD700', opacity=0.7),  
         text=hospitals_and_clinics['name'],
-        hoverinfo = "text",
-        
-    
+        hoverinfo="text",
     )
 
+    # Update layout
     fig.update_layout(
-        paper_bgcolor='#1D2419',
+        paper_bgcolor='#393D3F',
         font=dict(color='#FFFFFF'),
         title=dict(font=dict(size=20, color='#FFFFFF')),
         legend=dict(font=dict(color='#FFFFFF')),
@@ -367,58 +397,69 @@ def update_choropleth(metric):
 )
 def update_stacked_bar(regions, years):
     if regions is None or not regions:
-        # Return styled empty bar chart when no regions are selected
+        # no region selected
         return go.Figure(
             data=[],
             layout=go.Layout(
-                title="No Region Selected",
-                paper_bgcolor='#1D2419',
-                plot_bgcolor='#1D2419',
+                title=dict(
+                    text="No Region Selected",
+                    font=dict(size=20, color='#FFFFFF'),  # Title font color and size
+                    x=0.5,  # Center title
+                    xanchor='center'
+                ),
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
                 font=dict(color='#FFFFFF'),
                 xaxis=dict(
                     title="Region",
                     linecolor='#FFFFFF',
-                    gridcolor='#19647E',
+                    gridcolor='#60B3F7',
                     zeroline=False,
                 ),
                 yaxis=dict(
                     title="Count",
                     linecolor='#FFFFFF',
-                    gridcolor='#19647E',
+                    gridcolor='#60B3F7',
                     zeroline=False,
                 ),
             )
         )
 
-    # Filter the data based on selected regions and year range
+    # Filter the data based on  regions and year range
     filtered_df = df[(df["Region"].isin(regions)) & (df["Year"].between(years[0], years[1]))]
 
     if filtered_df.empty:
-        # Return styled empty bar chart when no data is available
         return go.Figure(
             data=[],
             layout=go.Layout(
                 title="No Data Available for Selected Regions and Years",
-                paper_bgcolor='#1D2419',
-                plot_bgcolor='#1D2419',
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
                 font=dict(color='#FFFFFF'),
                 xaxis=dict(
                     title="Region",
                     linecolor='#FFFFFF',
-                    gridcolor='#19647E',
+                    gridcolor='#60B3F7',
                     zeroline=False,
                 ),
                 yaxis=dict(
                     title="Count",
                     linecolor='#FFFFFF',
-                    gridcolor='#19647E',
+                    gridcolor='#60B3F7',
                     zeroline=False,
                 ),
             )
         )
 
-    # Group the filtered data
     filtered_df = filtered_df.groupby(['Region', 'Year'], as_index=False).sum()
+
+    # Dynamically change titles
+    if len(regions) <=3: #lmao 
+        # If 1 to 3 regions are selected, list the region names
+        title = f"Cases and Deaths in {', '.join(regions)} from {years[0]} to {years[1]}"
+    else:
+        # If more than 3 regions are selected, use "Multiple Regions" in the title
+        title = f"Cases and Deaths in selected regions from {years[0]} to {years[1]}"
 
     # Create a stacked bar chart
     fig = go.Figure()
@@ -427,39 +468,43 @@ def update_stacked_bar(regions, years):
         x=filtered_df['Region'],
         y=filtered_df['Dengue_Cases'] - filtered_df['Dengue_Deaths'],  # Non-death cases
         name='Dengue Cases (Excluding Deaths)',
-        marker_color='#28AFB0'  # Teal
+        marker_color='#C7E5FF'  # Teal
     ))
 
     fig.add_trace(go.Bar(
         x=filtered_df['Region'],
         y=filtered_df['Dengue_Deaths'],  # Deaths
         name='Dengue Deaths',
-        marker_color='#F4D35E'  # Yellow
+        marker_color='#EC7777'  # Red
     ))
 
-    # Update layout for stacked bar chart
     fig.update_layout(
-        barmode='stack',  # Stacked bars
-        title="Cases and Deaths per Region and Year",
-        paper_bgcolor='#1D2419',
-        plot_bgcolor='#1D2419',
+        barmode='stack',  # Stacked barschat
+        title=dict(
+            text=title,  
+            font=dict(size=20, color='#FFFFFF'),  # Title font color and size
+            x=0.5,  # Center the title
+            xanchor='center'
+        ),
+        paper_bgcolor='#393D3F',
+        plot_bgcolor='#393D3F',
         font=dict(color='#FFFFFF'),
-        
         xaxis=dict(
             title=dict(text="Region", font=dict(color='#FFFFFF')),
             linecolor='#FFFFFF',
-            gridcolor='#19647E'
+            gridcolor='#60B3F7'
         ),
         yaxis=dict(
             title=dict(text="Count", font=dict(color='#FFFFFF')),
             linecolor='#FFFFFF',
-            gridcolor='#19647E'
+            gridcolor='#60B3F7'
         ),
         legend=dict(font=dict(color='#FFFFFF')),
         hovermode='x unified',
     )
 
     return fig
+
 
 
 # Update specific region line chart
@@ -473,12 +518,17 @@ def update_specific_region_graph(selected_region, selected_years):
         return go.Figure(
             data=[], 
             layout=go.Layout(
-                title="No Region Selected",
-                paper_bgcolor='#1D2419',
-                plot_bgcolor='#1D2419',
+                title=dict(
+                    text="No Region Selected",
+                    font=dict(size=20, color='#FFFFFF'), 
+                    x=0.5,  # Center 
+                    xanchor='center'  # Anchor 
+                ),
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
                 font=dict(color='#FFFFFF'),
-                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#19647E'),
-                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#19647E'),
+                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#60B3F7'),
             )
         )
 
@@ -491,11 +541,11 @@ def update_specific_region_graph(selected_region, selected_years):
             data=[], 
             layout=go.Layout(
                 title="No Data Available for Selected Region and Years",
-                paper_bgcolor='#1D2419',
-                plot_bgcolor='#1D2419',
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
                 font=dict(color='#FFFFFF'),
-                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#19647E'),
-                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#19647E'),
+                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#60B3F7'),
             )
         )
 
@@ -510,20 +560,25 @@ def update_specific_region_graph(selected_region, selected_years):
         y='Count',
         color='Metric',
         title=f'Dengue Cases and Deaths Over Time in {selected_region}',
-        color_discrete_map={'Dengue_Cases': '#28AFB0', 'Dengue_Deaths': '#F4D35E'}
+        color_discrete_map={'Dengue_Cases': '#C7E5FF', 'Dengue_Deaths': '#EC7777'}
     )
 
     fig.update_layout(
-        paper_bgcolor='#1D2419',
-        plot_bgcolor='#1D2419',
+        paper_bgcolor='#393D3F',
+        plot_bgcolor='#393D3F',
         font=dict(color='#FFFFFF'),
-        title=dict(font=dict(size=20, color='#FFFFFF')),
-        xaxis=dict(title=dict(text="Date", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#19647E'),
-        yaxis=dict(title=dict(text="Number of Cases/Deaths", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#19647E'),
+        title=dict(
+            font=dict(size=20, color='#FFFFFF'),  # Title font color and size
+            x=0.5,  # Center the title
+            xanchor='center'  # Anchor the title at the center
+        ),
+        xaxis=dict(title=dict(text="Date", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#60B3F7'),
+        yaxis=dict(title=dict(text="Number of Cases/Deaths", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#60B3F7'),
         legend=dict(font=dict(color='#FFFFFF')),
         hovermode='x unified',
     )
     return fig
+
 
 # ------------------------------------------run app ------------------------------------------------------------------------
 if __name__ == '__main__':
