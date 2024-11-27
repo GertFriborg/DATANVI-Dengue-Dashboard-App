@@ -9,6 +9,7 @@ import geopandas as gpd
 # Load data
 df = pd.read_csv("Data/df_improved.csv")
 hospitals_and_clinics = pd.read_csv("Data/hospitals_and_clinics.csv")
+hospitals_per_island = pd.read_csv("Data/hospitals_per_island.csv")
 total_cases_and_deaths_with_region = gpd.read_file("Data/total_cases_and_deaths_with_region/total_cases_and_deaths_with_region.shp")
 total_cases_and_deaths_with_region['geometry'] = total_cases_and_deaths_with_region['geometry'].simplify(tolerance=0.01, preserve_topology=True)  # Simplify geometry for faster loading
 total_cases_and_deaths_with_region.set_crs(epsg=4326, inplace=True)
@@ -159,19 +160,34 @@ app.layout = html.Div(
             # Pie Chart and Choropleth Map
             dbc.Row([
                 dbc.Col(
-                    dbc.Card([
-                        dbc.CardHeader(html.H4("Dengue Cases/Deaths per Island", style={'color': '#FFFFFF'})),
-                        dbc.CardBody([
-                            dcc.Graph(id='pie-graph'),
-                            dcc.Store(id='metric-store', data='Cases')
-                        ])
-                    ], style={'backgroundColor': '#60B3F7'}),
-                    width=6
+                    [   
+                        dbc.Card([
+                            dbc.CardHeader(html.H4("Number of Hospitals per Island", style={'color': '#FFFFFF'})),
+                            dbc.CardBody(
+                                [
+                                    dcc.Graph(id='hospitals_donut'),
+                                ],
+                                 
+                            )
+                        ], style={'backgroundColor': '#60B3F7', 'margin-bottom':'10px'}),
+
+                        dbc.Card([
+                            dbc.CardHeader(html.H4(id='donut_title', children="Dengue Cases/Deaths per Island", style={'color': '#FFFFFF'})),
+                            dbc.CardBody([
+                                dcc.Graph(id='pie-graph'),
+                                dcc.Store(id='metric-store', data='Cases')
+                            ])
+                        ], style={'backgroundColor': '#60B3F7'}),
+
+    
+                    ],
+                    width=6,
+                    style={'height': '900px'}
                 ),
                 dbc.Col(
                     dbc.Card([
-                        dbc.CardHeader(html.H4("Dengue Cases/Deaths by Region", style={'color': '#FFFFFF'})),
-                        dbc.CardBody(dcc.Graph(id='choropleth-with-hospitals'))
+                        dbc.CardHeader(html.H4(id ='choro_title', children="Dengue Cases/Deaths by Region", style={'color': '#FFFFFF'})),
+                        dbc.CardBody(dcc.Graph(id='choropleth-with-hospitals', config={"scrollZoom": True} ))
                     ], style={'backgroundColor': '#60B3F7'}),
                     width=6
                 )
@@ -206,7 +222,8 @@ app.layout = html.Div(
                                     'color': '#FFFFFF',  # White
                                     'display': 'flex',  
                                     'flexWrap': 'wrap', 
-                                    'padding': '10px',  
+                                    'padding': '10px',
+                                      
                                   
                                 },
                                 inputStyle={"margin-right": "10px", "margin-bottom": "10px"},  # Space checkboxes
@@ -261,14 +278,70 @@ app.layout = html.Div(
                 className="mt-4 mb-4"
             )
         ]#,fluid=True
-        )
+        ),dcc.Interval(id='interval-trigger', interval=60000, n_intervals=0) #serve as input for the hospital donut
     ]
 )
 
 
 # --------------------------Callbacks-------------------------------------------------------------------------------------------------------------------------
+#for updating the card headers for choropleth and donut chsart
+@app.callback(
+    [Output('donut_title', 'children'),
+     Output('choro_title', 'children')],
+    Input('metric-store', 'data')
+)
+def update_titles(metric):
+    if metric == "Cases":
+        donut_title = "Dengue Cases per Island"
+        choro_title = "Dengue Cases by Region and Hospital Locations"
+    else:  # metric == "Deaths"
+        donut_title = "Dengue Deaths per Island"
+        choro_title = "Dengue Deaths by Region and Hospital Locations"
+    
+    return donut_title, choro_title
 
+#donut chart for number of hospitals per island
+@app.callback(
+    Output('hospitals_donut', 'figure'),
+    Input('interval-trigger', 'n_intervals'),
 
+)
+#HORIZONTAL HOSPITAL BAR, NOT DONUT ANYMORE
+def update_hospital_donut(_):
+    island_colors = {
+        "Luzon": '#FFD700',
+        "Visayas": "#60B3F7",
+        "Mindanao" : "#EC7777"
+    }
+    
+    fig = px.bar(
+        hospitals_per_island,
+        x="Hospital_Count",
+        y="Island",
+        orientation='h',  # Horizontal bar chart
+        color='Island',
+        color_discrete_map=island_colors
+    )
+
+    fig.update_traces(
+        texttemplate='%{x}',  
+        textposition='outside'
+    )
+
+    fig.update_layout(
+        paper_bgcolor='#393D3F',
+        plot_bgcolor='#393D3F',
+        font=dict(color='#FFFFFF'),
+        title=dict(font=dict(size=20, color='#FFFFFF')),
+        #margin=dict(l=50, r=50, t=50, b=50),
+        yaxis=dict(title="Island"),
+        xaxis=dict(title="Hospital Count",range=[0, max(hospitals_per_island['Hospital_Count']) + 50],),
+        #width=600,
+        #height=600,  
+        bargap=0.2  
+    )
+
+    return fig
 
 # FOR PIE AND CHOROPLETH ROW
     #BuTTONS
@@ -279,30 +352,27 @@ app.layout = html.Div(
     [State('metric-store', 'data')]
 )
 
-def update_metric(cases_n_clicks, deaths_n_clicks, current_metric):
-    # Default clicks to 0 if None
+def update_metric(cases_n_clicks, deaths_n_clicks, last_clicked_metric):
     cases_n_clicks = cases_n_clicks or 0
     deaths_n_clicks = deaths_n_clicks or 0
 
-    # Determine which button was clicked most recently
-    if cases_n_clicks > deaths_n_clicks and current_metric != 'Cases':
+    if cases_n_clicks > deaths_n_clicks and last_clicked_metric != 'Cases':
         return 'Cases'
-    if deaths_n_clicks > cases_n_clicks and current_metric != 'Deaths':
+    if deaths_n_clicks > cases_n_clicks and last_clicked_metric != 'Deaths':
         return 'Deaths'
 
-    # If the same button is clicked again, keep the current metric
-    return current_metric
+    return last_clicked_metric
 
 
 
-    # Update pie chart based on button
+# Update pie chart based on button
 @app.callback(
     Output('pie-graph', 'figure'),
     Input('metric-store', 'data')
 )
 def update_pie_chart(metric):
     values = 'Dengue_Cases' if metric == 'Cases' else 'Dengue_Deaths'
-    title = f'Dengue {metric} per Island'
+    #title = f'Dengue {metric} per Island'
     
 
     island_colors = {
@@ -316,8 +386,8 @@ def update_pie_chart(metric):
         df,
         names='Island',
         values=values,
-        hole=0.4,
-        title=title,
+        hole=0.5,
+        
         color='Island',
         color_discrete_map=island_colors
     )
@@ -328,11 +398,11 @@ def update_pie_chart(metric):
         font=dict(color='#FFFFFF'),
         title=dict(font=dict(size=20, color='#FFFFFF')),
         width=600,
-        height=600,
+        #height=600,
     )
     return fig
 
-    # Update choropleth map based on button
+# Update choropleth map based on button
 @app.callback(
     Output('choropleth-with-hospitals', 'figure'),
     Input('metric-store', 'data')
@@ -340,7 +410,7 @@ def update_pie_chart(metric):
 def update_choropleth(metric):
     metric_column = 'Dengue_Cas' if metric == 'Cases' else 'Dengue_Dea'
     
-    # Define color scale based on the selected metric
+    # color based on meteric
     if metric == 'Cases':
         color_scale = [
             [0.0, '#FFFFFF'],  # White for the minimum
@@ -352,19 +422,20 @@ def update_choropleth(metric):
             [1.0, '#DC143C']   # Red for the maximum (Deaths)
         ]
     
-    # Create choropleth map
+    # choropleth map
     fig = px.choropleth_mapbox(
         total_cases_and_deaths_with_region,
         geojson=total_cases_and_deaths_with_region.__geo_interface__,
         locations=total_cases_and_deaths_with_region.index,
         color=metric_column,
         hover_name='Region',
-        mapbox_style="carto-darkmatter",  # Use dark background style
-        zoom=4,
-        center={"lat": 12.8797, "lon": 121.7740},
+        mapbox_style="carto-darkmatter",  # dark map
+        zoom=5.1,
+        center={"lat": 12.8797, "lon": 121.9740},
         opacity=0.7,
         color_continuous_scale=color_scale,  
-        title=f"Dengue {metric} by Region",
+        #title=f"Dengue {metric} by Region"
+        
     )
 
     # Add hospital points with the ye llowcolor
@@ -382,9 +453,20 @@ def update_choropleth(metric):
         paper_bgcolor='#393D3F',
         font=dict(color='#FFFFFF'),
         title=dict(font=dict(size=20, color='#FFFFFF')),
+        coloraxis_colorbar=dict(
+            title=f"Dengue {metric}",  
+            x=0.99,  
+            y=0.8,   
+            xanchor='right',  
+            yanchor='middle',  
+            len=0.4,  
+            bgcolor="rgba(0,0,0,0.5)"  
+        ),
         legend=dict(font=dict(color='#FFFFFF')),
         width=600,
-        height=600,
+        height=1000,
+        margin=dict(l=0, r=0, t=0, b=0),
+        
     )
     return fig
 
