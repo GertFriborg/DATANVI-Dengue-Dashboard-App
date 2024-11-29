@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 import numpy as np
 import geopandas as gpd
+from plotly.subplots import make_subplots
 
 # Load data
 df = pd.read_csv("Data/df_improved.csv")
@@ -51,6 +52,7 @@ total_per_year_graph.update_layout(
     ),
     hovermode='x unified'  
 )
+
 #--------------------ACTUAL APP-------------------------------------------------------------------------------
 # External stylesheets
 external_stylesheets = [
@@ -162,7 +164,7 @@ app.layout = html.Div(
                 dbc.Col(
                     [   
                         dbc.Card([
-                            dbc.CardHeader(html.H4("Number of Hospitals per Island", style={'color': '#FFFFFF'})),
+                            dbc.CardHeader(html.H4("Number of Hospitals per Island Group", style={'color': '#FFFFFF'})),
                             dbc.CardBody(
                                 [
                                     dcc.Graph(id='hospitals_donut'),
@@ -172,7 +174,7 @@ app.layout = html.Div(
                         ], style={'backgroundColor': '#60B3F7', 'margin-bottom':'10px'}),
 
                         dbc.Card([
-                            dbc.CardHeader(html.H4(id='donut_title', children="Dengue Cases/Deaths per Island", style={'color': '#FFFFFF'})),
+                            dbc.CardHeader(html.H4(id='donut_title', children="Dengue Cases/Deaths per Island Group", style={'color': '#FFFFFF'})),
                             dbc.CardBody([
                                 dcc.Graph(id='pie-graph'),
                                 dcc.Store(id='metric-store', data='Cases')
@@ -292,10 +294,10 @@ app.layout = html.Div(
 )
 def update_titles(metric):
     if metric == "Cases":
-        donut_title = "Dengue Cases per Island"
+        donut_title = "Dengue Cases per Island Group"
         choro_title = "Dengue Cases by Region and Hospital Locations"
     else:  # metric == "Deaths"
-        donut_title = "Dengue Deaths per Island"
+        donut_title = "Dengue Deaths per Island Group"
         choro_title = "Dengue Deaths by Region and Hospital Locations"
     
     return donut_title, choro_title
@@ -595,7 +597,100 @@ def update_stacked_bar(regions, years):
     [Input('specific_dropdown', 'value'),
      Input('specific_slider', 'value')]
 )
+
 def update_specific_region_graph(selected_region, selected_years):
+    if not selected_region:
+        return go.Figure(
+            data=[], 
+            layout=go.Layout(
+                title=dict(
+                    text="No Region Selected",
+                    font=dict(size=20, color='#FFFFFF'), 
+                    x=0.5,  # Center 
+                    xanchor='center'  # Anchor 
+                ),
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
+                font=dict(color='#FFFFFF'),
+                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+            )
+        )
+
+    filtered_df = df[
+        (df["Region"] == selected_region) & (df["Year"].between(selected_years[0], selected_years[1]))
+    ]
+
+    if filtered_df.empty:
+        return go.Figure(
+            data=[], 
+            layout=go.Layout(
+                title="No Data Available for Selected Region and Years",
+                paper_bgcolor='#393D3F',
+                plot_bgcolor='#393D3F',
+                font=dict(color='#FFFFFF'),
+                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+            )
+        )
+
+    aggregated_df = filtered_df.groupby(['Date'], as_index=False).sum()
+
+    # Create traces for cases and deaths
+    cases_trace = go.Scatter(
+        x=aggregated_df['Date'],
+        y=aggregated_df['Dengue_Cases'],
+        name='Dengue Cases',
+        mode='lines',
+        line=dict(color='#C7E5FF'),
+        yaxis='y1'
+    )
+
+    deaths_trace = go.Scatter(
+        x=aggregated_df['Date'],
+        y=aggregated_df['Dengue_Deaths'],
+        name='Dengue Deaths',
+        mode='lines',
+        line=dict(color='#EC7777'),
+        yaxis='y2'
+    )
+
+    # Create the figure
+    fig = go.Figure(data=[cases_trace, deaths_trace])
+
+    # Update the layout for dual y-axes
+    fig.update_layout(
+        title=dict(
+            text=f'Dengue Cases and Deaths Over Time in {selected_region}',
+            font=dict(size=20, color='#FFFFFF'),
+            x=0.5,
+            xanchor='center'
+        ),
+        paper_bgcolor='#393D3F',
+        plot_bgcolor='#393D3F',
+        font=dict(color='#FFFFFF'),
+        xaxis=dict(
+            title=dict(text="Date", font=dict(color='#FFFFFF')),
+            linecolor='#FFFFFF',
+            gridcolor='#60B3F7'
+        ),
+        yaxis=dict(
+            title=dict(text="Number of Cases", font=dict(color='#C7E5FF')),
+            linecolor='#C7E5FF',
+            gridcolor='#60B3F7',
+        ),
+        yaxis2=dict(
+            title=dict(text="Number of Deaths", font=dict(color='#EC7777')),
+            overlaying='y',  # Overlay y-axis on the same plot
+            side='right',    # Position it on the right
+        ),
+        legend=dict(font=dict(color='#FFFFFF')),
+        hovermode='x unified'
+    )
+    
+    return fig
+
+def update_specific_region_graph_old(selected_region, selected_years):
     if not selected_region:
         return go.Figure(
             data=[], 
