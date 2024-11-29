@@ -64,7 +64,7 @@ app.layout = html.Div(
     style={
         'backgroundColor': '#393D3F',  # layout bg BLACK
         'color': '#FFFFFF',           # font WHITE
-        'padding': '20px',
+        'padding': '10px',
     },
     children=[
         dbc.Container([
@@ -205,7 +205,7 @@ app.layout = html.Div(
                     width=12,
                     className="d-flex justify-content-center mt-2"
                 )
-            ),
+            ), 
 
             # Bsr Bar Chart Section
             dbc.Row(
@@ -310,8 +310,8 @@ def update_titles(metric):
 def update_hospital_donut(_):
     island_colors = {
         "Luzon": '#FFD700',
-        "Visayas": "#60B3F7",
-        "Mindanao" : "#EC7777"
+        "Visayas": "#FFD700",
+        "Mindanao" : "#FFD700"
     }
     
     fig = px.bar(
@@ -334,11 +334,17 @@ def update_hospital_donut(_):
         font=dict(color='#FFFFFF'),
         title=dict(font=dict(size=20, color='#FFFFFF')),
         #margin=dict(l=50, r=50, t=50, b=50),
-        yaxis=dict(title="Island"),
-        xaxis=dict(title="Hospital Count",range=[0, max(hospitals_per_island['Hospital_Count']) + 50],),
+        yaxis=dict(title="Island",
+                   categoryorder="total ascending"),
+        xaxis=dict(title="Hospital Count",
+                   range=[0, max(hospitals_per_island['Hospital_Count']) + 50],
+                   autorange=False
+                   ),
+
         #width=600,
         #height=600,  
-        bargap=0.2  
+        bargap=0.2,
+        showlegend=False 
     )
 
     return fig
@@ -351,17 +357,15 @@ def update_hospital_donut(_):
      Input('deaths_button', 'n_clicks')],
     [State('metric-store', 'data')]
 )
-
 def update_metric(cases_n_clicks, deaths_n_clicks, last_clicked_metric):
-    cases_n_clicks = cases_n_clicks or 0
-    deaths_n_clicks = deaths_n_clicks or 0
+    # Default to 0 if clicks are None
+    clicks = {'Cases': cases_n_clicks or 0, 'Deaths': deaths_n_clicks or 0}
 
-    if cases_n_clicks > deaths_n_clicks and last_clicked_metric != 'Cases':
-        return 'Cases'
-    if deaths_n_clicks > cases_n_clicks and last_clicked_metric != 'Deaths':
-        return 'Deaths'
+    # Determine the metric with the most clicks
+    new_metric = max(clicks, key=clicks.get)
 
-    return last_clicked_metric
+    # Update only if the new metric is different
+    return new_metric if new_metric != last_clicked_metric else last_clicked_metric
 
 
 
@@ -374,12 +378,18 @@ def update_pie_chart(metric):
     values = 'Dengue_Cases' if metric == 'Cases' else 'Dengue_Deaths'
     #title = f'Dengue {metric} per Island'
     
-
-    island_colors = {
-        "Luzon": '#FFD700',
-        "Visayas": "#60B3F7",
-        "Mindanao" : "#EC7777"
-    }
+    if metric=='Cases':
+        island_colors = {
+            "Luzon": '#60B3F7',
+            "Visayas": "#82C1FF",
+            "Mindanao" : "#C7E5FF"
+        }
+    else:
+        island_colors = {
+            "Luzon": '#E96161',  #E96161
+            "Visayas": "#EF8d8d", #EF8d8d
+            "Mindanao" : "#EC7777" #EC7777
+        }
     
 
     fig = px.pie(
@@ -387,11 +397,10 @@ def update_pie_chart(metric):
         names='Island',
         values=values,
         hole=0.5,
-        
         color='Island',
         color_discrete_map=island_colors
     )
-    fig.update_traces(textinfo='percent+label')
+    fig.update_traces(textinfo='percent+label', marker=dict(line=dict(color='#393D3F', width=2)))
 
     fig.update_layout(
         paper_bgcolor='#393D3F',
@@ -479,14 +488,13 @@ def update_choropleth(metric):
 )
 def update_stacked_bar(regions, years):
     if regions is None or not regions:
-        # no region selected
         return go.Figure(
             data=[],
             layout=go.Layout(
                 title=dict(
                     text="No Region Selected",
-                    font=dict(size=20, color='#FFFFFF'),  # Title font color and size
-                    x=0.5,  # Center title
+                    font=dict(size=20, color='#FFFFFF'),
+                    x=0.5,
                     xanchor='center'
                 ),
                 paper_bgcolor='#393D3F',
@@ -507,7 +515,7 @@ def update_stacked_bar(regions, years):
             )
         )
 
-    # Filter the data based on  regions and year range
+    # Filter the data based on regions and year range
     filtered_df = df[(df["Region"].isin(regions)) & (df["Year"].between(years[0], years[1]))]
 
     if filtered_df.empty:
@@ -536,37 +544,41 @@ def update_stacked_bar(regions, years):
     filtered_df = filtered_df.groupby(['Region', 'Year'], as_index=False).sum()
 
     # Dynamically change titles
-    if len(regions) <=3: #lmao 
-        # If 1 to 3 regions are selected, list the region names
+    if len(regions) <= 3:
         title = f"Cases and Deaths in {', '.join(regions)} from {years[0]} to {years[1]}"
     else:
-        # If more than 3 regions are selected, use "Multiple Regions" in the title
         title = f"Cases and Deaths in selected regions from {years[0]} to {years[1]}"
 
-    # Create a stacked bar chart
+    # Create a grouped bar chart with offset groups
     fig = go.Figure()
 
+    # Add Dengue Cases (excluding deaths)
     fig.add_trace(go.Bar(
         x=filtered_df['Region'],
         y=filtered_df['Dengue_Cases'] - filtered_df['Dengue_Deaths'],  # Non-death cases
-        name='Dengue Cases (Excluding Deaths)',
-        marker_color='#C7E5FF'  # Teal
+        name='Dengue Cases',
+        marker_color='#C7E5FF',  # Teal
+        offsetgroup=0,  # Set offset group for cases
+        yaxis='y1'  # Assign to primary y-axis
     ))
 
+    # Add Dengue Deaths
     fig.add_trace(go.Bar(
         x=filtered_df['Region'],
         y=filtered_df['Dengue_Deaths'],  # Deaths
         name='Dengue Deaths',
-        marker_color='#EC7777'  # Red
+        marker_color='#EC7777',  # Red
+        offsetgroup=1,  # Set offset group for deaths
+        yaxis='y2'  # Assign to secondary y-axis
     ))
 
     fig.update_layout(
-        barmode='stack',  # Stacked barschat
+        barmode='group',  # Grouped bars
         title=dict(
-            text=title,  
-            font=dict(size=20, color='#FFFFFF'),  # Title font color and size
-            x=0.5,  # Center the title
-            xanchor='center'
+            text=title,
+            font=dict(size=20, color='#FFFFFF'),
+            x=0.5,
+            xanchor='center',
         ),
         paper_bgcolor='#393D3F',
         plot_bgcolor='#393D3F',
@@ -577,16 +589,26 @@ def update_stacked_bar(regions, years):
             gridcolor='#60B3F7'
         ),
         yaxis=dict(
-            title=dict(text="Count", font=dict(color='#FFFFFF')),
+            title=dict(text="Count (Cases)", font=dict(color='#FFFFFF')),
             linecolor='#FFFFFF',
-            gridcolor='#60B3F7'
+            gridcolor='#60B3F7',
         ),
-        legend=dict(font=dict(color='#FFFFFF')),
+        yaxis2=dict(
+            title=dict(text="Count (Deaths)", font=dict(color='#FFFFFF')),
+            linecolor='#FFFFFF',
+            gridcolor='#f2a4a4',
+            overlaying='y',  # Overlay on primary y-axis
+            side='right',    # Place it on the right side of the chart
+            tickmode="sync"
+        ),
+        legend=dict(font=dict(color='#FFFFFF'),
+            x=1.1,
+            y=1),
+            
         hovermode='x unified',
     )
 
     return fig
-
 
 
 # Update specific region line chart
@@ -609,8 +631,14 @@ def update_specific_region_graph(selected_region, selected_years):
                 paper_bgcolor='#393D3F',
                 plot_bgcolor='#393D3F',
                 font=dict(color='#FFFFFF'),
-                xaxis=dict(title="Date", linecolor='#FFFFFF', gridcolor='#60B3F7'),
-                yaxis=dict(title="Number of Cases/Deaths", linecolor='#FFFFFF', gridcolor='#60B3F7'),
+                xaxis=dict(title="Date",
+                            linecolor='#FFFFFF', 
+                            gridcolor='#60B3F7',
+                            zeroline=False),
+                yaxis=dict(title="Number of Cases/Deaths",
+                            linecolor='#FFFFFF', 
+                            gridcolor='#60B3F7', 
+                            zeroline=False),
             )
         )
 
@@ -653,6 +681,7 @@ def update_specific_region_graph(selected_region, selected_years):
             font=dict(size=20, color='#FFFFFF'),  # Title font color and size
             x=0.5,  # Center the title
             xanchor='center'  # Anchor the title at the center
+            
         ),
         xaxis=dict(title=dict(text="Date", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#60B3F7'),
         yaxis=dict(title=dict(text="Number of Cases/Deaths", font=dict(color='#FFFFFF')), linecolor='#FFFFFF', gridcolor='#60B3F7'),
